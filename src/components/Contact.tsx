@@ -3,7 +3,7 @@ import { Mail, Linkedin, Github, Heart } from 'lucide-react';
 
 const Contact = () => {
   return (
-    <footer id="contact" className="py-16 px-4 sm:px-6 lg:px-8 border-t border-white/10">
+    <footer id="contact" className="section-shell border-t border-accent-blue/20 py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -13,7 +13,10 @@ const Contact = () => {
           className="text-center space-y-8"
         >
           <div>
-            <h2 className="text-3xl font-bold mb-4">
+            <p className="mb-3 font-console text-xs uppercase tracking-[0.25em] text-accent-purple">
+              Contact / Open Channel
+            </p>
+            <h2 className="mb-4 text-3xl font-bold">
               Let's <span className="text-gradient">Connect</span>
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
@@ -22,15 +25,14 @@ const Contact = () => {
             </p>
           </div>
 
-          {/* Social Links */}
           <div className="flex justify-center gap-6">
             <motion.a
               href="mailto:abhinav.bharadwaj@rutgers.edu"
               whileHover={{ scale: 1.1, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="w-12 h-12 glass rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+              className="glass flex h-12 w-12 items-center justify-center rounded-full transition-colors hover:border-accent-blue/40"
             >
-              <Mail className="w-5 h-5 text-gray-300" />
+              <Mail className="h-5 w-5 text-gray-300" />
             </motion.a>
             <motion.a
               href="https://www.linkedin.com/in/abhinavsbharadwaj/"
@@ -38,9 +40,9 @@ const Contact = () => {
               rel="noopener noreferrer"
               whileHover={{ scale: 1.1, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="w-12 h-12 glass rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+              className="glass flex h-12 w-12 items-center justify-center rounded-full transition-colors hover:border-accent-purple/40"
             >
-              <Linkedin className="w-5 h-5 text-gray-300" />
+              <Linkedin className="h-5 w-5 text-gray-300" />
             </motion.a>
             <motion.a
               href="https://github.com/abhibrdwaj"
@@ -48,14 +50,13 @@ const Contact = () => {
               rel="noopener noreferrer"
               whileHover={{ scale: 1.1, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="w-12 h-12 glass rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+              className="glass flex h-12 w-12 items-center justify-center rounded-full transition-colors hover:border-amber-300/40"
             >
-              <Github className="w-5 h-5 text-gray-300" />
+              <Github className="h-5 w-5 text-gray-300" />
             </motion.a>
           </div>
 
-          {/* Footer Credit */}
-          <div className="pt-8 border-t border-white/10">
+          <div className="pt-8 border-t border-accent-blue/20">
             <p className="text-gray-500 text-sm flex items-center justify-center gap-2">
               Built with <Heart className="w-4 h-4 text-red-500 fill-red-500" /> using React, 
               Tailwind

@@ -57,13 +57,16 @@ const Skills = () => {
   const displayedSkills = getAllSkills();
 
   return (
-    <section id="skills" ref={ref} className="py-24 px-4 sm:px-6 lg:px-8 bg-background-light/50">
+    <section id="skills" ref={ref} className="section-shell py-24 px-4 sm:px-6 lg:px-8 bg-background-light/50">
       <div className="max-w-6xl mx-auto">
+        <p className="mb-4 text-center font-console text-xs uppercase tracking-[0.25em] text-accent-blue">
+          Skills / Capability Matrix
+        </p>
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
-          className="text-4xl sm:text-5xl font-bold mb-16 text-center"
+          className="mb-16 text-center text-4xl font-bold sm:text-5xl"
         >
           Skills & <span className="text-gradient">Technologies</span>
         </motion.h2>
@@ -81,8 +84,8 @@ const Skills = () => {
               onClick={() => setSelectedCategory(category.id)}
               className={`px-6 py-2 rounded-lg font-semibold transition-all duration-300 ${
                 selectedCategory === category.id
-                  ? 'bg-gradient-accent text-white shadow-lg shadow-accent-blue/50'
-                  : 'glass text-gray-300 hover:bg-white/10'
+                  ? 'bg-gradient-accent text-slate-900 shadow-lg shadow-accent-blue/40'
+                  : 'glass text-gray-300 hover:border-accent-blue/40'
               }`}
             >
               {category.label}
@@ -115,17 +118,14 @@ const Skills = () => {
                   layout: { duration: 0.3 },
                 }}
                 whileHover={{ scale: 1.1, y: -5 }}
-                className={`glass rounded-xl p-4 text-center cursor-pointer group flex flex-col items-center justify-between ${
+                className={`terminal-card group flex cursor-pointer flex-col items-center justify-between rounded-xl p-4 text-center ${
                   isVisible ? 'flex' : 'hidden'
                 }`}
               >
-                {/* Skill Name */}
-                <div className="text-sm font-semibold text-gray-300 group-hover:text-gradient transition-colors">
+                <div className="text-sm font-semibold text-gray-300 transition-colors group-hover:text-gradient">
                   {skill}
                 </div>
-                
-                {/* Proficiency Indicator */}
-                <div className="mt-3 w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/5">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={
