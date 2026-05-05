@@ -4,6 +4,7 @@ import { ChevronDown, Building2 } from 'lucide-react';
 import { experiences } from '@/data/experience';
 import freshworksLogo from '@/assets/logos/freshworks.svg';
 import rutgersLogo from '@/assets/logos/rutgers-r.svg';
+import stealthStartupLogo from '@/assets/logos/stealth-startup.png';
 
 const Experience = () => {
   const ref = useRef(null);
@@ -11,7 +12,8 @@ const Experience = () => {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const companyLogoMap: Record<string, string> = {
     'Freshworks': freshworksLogo,
-    'Rutgers University': rutgersLogo
+    'Rutgers University': rutgersLogo,
+    'Stealth Startup': stealthStartupLogo
   };
 
   return (

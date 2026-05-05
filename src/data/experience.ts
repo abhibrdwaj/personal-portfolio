@@ -10,6 +10,33 @@ export interface Experience {
 
 export const experiences: Experience[] = [
   {
+    company: "Stealth Startup",
+    role: "Founding Engineer",
+    duration: "Dec 2025 - Present",
+    location: "New York City, NY",
+    achievements: [
+      "Built a specialized multi-agent conversational interface with LangGraph, reducing parent logging friction by an estimated 60%",
+      "Designed a multi-vector RAG pipeline across isolated healthcare data domains, improving contextual retrieval accuracy by 35%",
+      "Implemented secure multi-tenant cloud deployment architecture on Azure and Vercel with automated CI/CD for rapid clinical beta iterations",
+      "Developed low-latency streaming AI APIs using SSE and WebSockets for token-level response delivery",
+      "Engineered clinical NLP and medical entity extraction pipelines to map unstructured parent inputs to standardized terminology",
+      "Built LLM-backed physical examination summary pipelines integrating chat context and Apple HealthKit telemetry",
+      "Established observability and continuous LLM-as-a-Judge evaluation workflows to detect regression and control model drift"
+    ],
+    tech: [
+      "LangGraph",
+      "RAG",
+      "LLMs",
+      "Clinical NLP",
+      "Azure",
+      "Vercel",
+      "CI/CD",
+      "SSE",
+      "WebSockets",
+      "Apple HealthKit"
+    ]
+  },
+  {
     company: "Rutgers University",
     role: "Graduate Teaching Assistant",
     duration: "Aug 2024 - Dec 2025",
