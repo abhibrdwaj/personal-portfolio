@@ -92,7 +92,7 @@ async def jd_fit(
         for h in hits:
             if h.chunk_id not in seen_ids:
                 seen_ids.add(h.chunk_id)
-                excerpt_lines.append(f"[chunk_id={h.chunk_id} title={h.title}]\n{h.text}")
+                excerpt_lines.append(f"[chunk_id={h.chunk_id} title={h.title} kind={h.kind}]\n{h.text}")
     trace.span(
         "retrieve_per_cluster",
         (time.perf_counter() - t_ret) * 1000,

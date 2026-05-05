@@ -9,6 +9,7 @@ from app.retrieval.index import VectorIndex
 class RetrievedChunk:
     chunk_id: str
     title: str
+    kind: str
     text: str
     score: float
 
@@ -35,16 +36,21 @@ def retrieve(
     *,
     top_k: int = 5,
     min_score: float = 0.12,
+    allowed_kinds: set[str] | None = None,
 ) -> list[RetrievedChunk]:
     idx, scores = top_k_indices(query_embedding, index.matrix, top_k)
     out: list[RetrievedChunk] = []
     for i, s in zip(idx.tolist(), scores.tolist()):
         if min_score >= 0 and s < min_score:
             continue
+        chunk_kind = index.kinds[i]
+        if allowed_kinds is not None and chunk_kind not in allowed_kinds:
+            continue
         out.append(
             RetrievedChunk(
                 chunk_id=index.chunk_ids[i],
                 title=index.titles[i],
+                kind=chunk_kind,
                 text=index.texts[i],
                 score=float(s),
             )

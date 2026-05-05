@@ -36,7 +36,7 @@ def _retrieved_block(chunks: list) -> str:
         return "(no excerpts above similarity threshold)"
     parts: list[str] = []
     for c in chunks:
-        parts.append(f"[chunk_id={c.chunk_id} title={c.title}]\n{c.text}")
+        parts.append(f"[chunk_id={c.chunk_id} title={c.title} kind={c.kind}]\n{c.text}")
     return "\n\n---\n\n".join(parts)
 
 
