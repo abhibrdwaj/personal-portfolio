@@ -31,3 +31,75 @@ jobs:
           ENVIRONMENT: ci
           CORPUS_VERSION: ci
           CORS_ORIGINS: http://127.0.0.1
+
+  build-and-deploy:
+    needs: pytest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set short SHA
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: api
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/portfolio-api:${{ steps.vars.outputs.sha_short }}
+            ghcr.io/${{ github.repository_owner }}/portfolio-api:latest
+
+      - name: Sync k8s manifests to the VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.ORACLE_VM_HOST }}
+          username: ${{ secrets.ORACLE_VM_USER }}
+          key: ${{ secrets.ORACLE_VM_SSH_KEY }}
+          source: "deploy/k3s/*"
+          target: "/opt/portfolio/deploy/k3s"
+
+      - name: Roll out the new image
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.ORACLE_VM_HOST }}
+          username: ${{ secrets.ORACLE_VM_USER }}
+          key: ${{ secrets.ORACLE_VM_SSH_KEY }}
+          script: |
+            kubectl set image deployment/portfolio-api api=ghcr.io/${{ github.repository_owner }}/portfolio-api:${{ steps.vars.outputs.sha_short }} -n portfolio
+            kubectl rollout status deployment/portfolio-api -n portfolio --timeout=120s
+
+      - name: Check if corpus changed
+        id: corpus
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- api/corpus | grep -q .; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Re-run corpus ingest
+        if: steps.corpus.outputs.changed == 'true'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.ORACLE_VM_HOST }}
+          username: ${{ secrets.ORACLE_VM_USER }}
+          key: ${{ secrets.ORACLE_VM_SSH_KEY }}
+          script: |
+            kubectl delete job corpus-ingest -n portfolio --ignore-not-found
+            sed -e 's|REPLACE_ME_GIT_SHA|${{ steps.vars.outputs.sha_short }}|' \
+                -e 's|ghcr.io/abhibrdwaj/portfolio-api:latest|ghcr.io/${{ github.repository_owner }}/portfolio-api:${{ steps.vars.outputs.sha_short }}|' \
+                /opt/portfolio/deploy/k3s/ingest-job.yaml | kubectl apply -f -
+            kubectl wait --for=condition=complete job/corpus-ingest -n portfolio --timeout=300s
