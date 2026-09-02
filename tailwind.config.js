@@ -8,17 +8,17 @@ export default {
     extend: {
       colors: {
         background: {
-          DEFAULT: '#0a0a0a',
-          light: '#1a1a1a',
+          DEFAULT: '#060b11',
+          light: '#0d151f',
         },
         accent: {
-          blue: '#3b82f6',
-          purple: '#8b5cf6',
+          blue: '#2ce2ff',
+          purple: '#afff40',
         },
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-accent': 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+        'gradient-accent': 'linear-gradient(135deg, #2ce2ff 0%, #afff40 100%)',
       },
       animation: {
         'gradient': 'gradient 15s ease infinite',

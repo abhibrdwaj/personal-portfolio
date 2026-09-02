@@ -10,6 +10,35 @@ export interface Experience {
 
 export const experiences: Experience[] = [
   {
+    company: "Kidture Health",
+    role: "Founding Engineer",
+    duration: "Jan 2026 - Present",
+    location: "New York City, NY",
+    achievements: [
+      "Sole backend engineer for a pediatric health platform — schema design, 39 production migrations, API, compliance, and Dockerized deploy on Render, with no dedicated DevOps/compliance function to hand off to",
+      "Built a GDPR-aligned account-erasure system (explicit deletion registry, not DB-cascade) shipped via a zero-downtime Alembic migration, verified with 33 tests and zero regressions",
+      "Designed a two-lane Redis worker + cron job architecture with atomic-deploy semantics, closing 14 pre-existing test failures with zero regressions",
+      "Designed and provisioned a 2-AZ AWS VPC with a self-managed NAT instance and 6 VPC endpoints, debugging two live infra issues invisible until tested live",
+      "Provisioned RDS Postgres (pgvector-enabled) and ElastiCache Serverless, choosing the Valkey engine over Redis OSS for a roughly 15x lower cost floor at beta scale",
+      "Designed a deny-list-based safety guardrail that escalates acute symptoms before any LLM is invoked — a hard code boundary, not a prompt instruction",
+      "Built a hybrid SNOMED/UMLS clinical-term resolver (curated catalog + batched Claude Haiku extraction), reaching 75% code-assignment accuracy",
+      "Shipped and hardened device-integration sync (Oura, Apple HealthKit), fixing a production sync-resilience bug (28/28 targeted tests)"
+    ],
+    tech: [
+      "Python",
+      "FastAPI",
+      "SQLAlchemy",
+      "Alembic",
+      "PostgreSQL",
+      "pgvector",
+      "Redis",
+      "Docker",
+      "Render",
+      "AWS",
+      "Anthropic Claude API"
+    ]
+  },
+  {
     company: "Rutgers University",
     role: "Graduate Teaching Assistant",
     duration: "Aug 2024 - Dec 2025",

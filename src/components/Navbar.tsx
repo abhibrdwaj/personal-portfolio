@@ -57,7 +57,7 @@ const Navbar = () => {
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'glass border-b border-white/10' : 'bg-transparent'
+        isScrolled ? 'glass border-b border-accent-blue/20' : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,11 +65,11 @@ const Navbar = () => {
           {/* Logo/Name - Left side */}
           <motion.button
             onClick={() => scrollToSection('hero')}
-            className="text-xl font-bold text-gradient cursor-pointer hover:opacity-80 transition-opacity"
+            className="cursor-pointer text-lg font-bold uppercase tracking-[0.2em] text-gradient transition-opacity hover:opacity-80 sm:text-xl"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Abhinav
+            Abhinav.exe
           </motion.button>
 
           {/* Desktop Navigation - Right side */}
@@ -78,10 +78,10 @@ const Navbar = () => {
               <motion.button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative ${
+                className={`relative rounded-lg px-4 py-2 text-sm font-console tracking-wide transition-all duration-300 ${
                   activeSection === item.id
                     ? 'text-white'
-                    : 'text-gray-400 hover:text-white'
+                    : 'text-gray-400 hover:text-accent-blue'
                 }`}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.95 }}
@@ -90,7 +90,7 @@ const Navbar = () => {
                 {activeSection === item.id && (
                   <motion.div
                     layoutId="activeSection"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-accent rounded-full"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-gradient-accent"
                     initial={false}
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
@@ -102,7 +102,7 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg glass text-gray-300 hover:text-white transition-colors"
+            className="glass rounded-lg p-2 text-gray-300 transition-colors hover:text-accent-blue md:hidden"
             aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? (
@@ -122,17 +122,17 @@ const Navbar = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden glass border-t border-white/10"
+            className="glass border-t border-accent-blue/20 md:hidden"
           >
             <div className="px-4 py-4 space-y-2">
               {navItems.map((item) => (
                 <motion.button
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  className={`w-full rounded-lg px-4 py-3 text-left text-sm font-console tracking-wide transition-all duration-300 ${
                     activeSection === item.id
                       ? 'bg-white/10 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      : 'text-gray-400 hover:bg-white/5 hover:text-accent-blue'
                   }`}
                   whileTap={{ scale: 0.98 }}
                 >

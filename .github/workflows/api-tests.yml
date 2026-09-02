@@ -1,0 +1,33 @@
+name: API tests
+
+on:
+  push:
+    paths:
+      - "api/**"
+      - ".github/workflows/api-tests.yml"
+  pull_request:
+    paths:
+      - "api/**"
+      - ".github/workflows/api-tests.yml"
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install and test
+        run: |
+          pip install -e ".[dev]"
+          pytest -v
+        env:
+          EMBED_MODE: mock
+          OPENAI_API_KEY: ci-dummy-key
+          ENVIRONMENT: ci
+          CORPUS_VERSION: ci
+          CORS_ORIGINS: http://127.0.0.1

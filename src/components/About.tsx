@@ -14,21 +14,23 @@ const About = () => {
   ];
 
   return (
-    <section id="about" ref={ref} className="py-24 px-4 sm:px-6 lg:px-8">
+    <section id="about" ref={ref} className="section-shell py-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
-          className="grid md:grid-cols-2 gap-12 items-center mb-16"
+          className="mb-16 grid items-center gap-12 md:grid-cols-2"
         >
-          {/* Text Content */}
           <div>
+            <p className="mb-4 font-console text-xs uppercase tracking-[0.25em] text-accent-blue">
+              Profile / Operator Dossier
+            </p>
             <motion.h2
               initial={{ opacity: 0, x: -30 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
               transition={{ delay: 0.2, duration: 0.8 }}
-              className="text-4xl sm:text-5xl font-bold mb-6"
+              className="mb-6 text-4xl font-bold sm:text-5xl"
             >
               About <span className="text-gradient">Me</span>
             </motion.h2>
@@ -36,7 +38,7 @@ const About = () => {
               initial={{ opacity: 0 }}
               animate={isInView ? { opacity: 1 } : {}}
               transition={{ delay: 0.4, duration: 0.8 }}
-              className="space-y-4 text-gray-300 leading-relaxed"
+              className="space-y-4 leading-relaxed text-gray-300"
             >
               <p>
                 I'm a full-stack engineer with close to 4 years of experience at Freshworks, 
@@ -57,29 +59,31 @@ const About = () => {
             </motion.div>
           </div>
 
-          {/* Profile Photo */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={isInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="relative"
+            className="terminal-card relative p-4"
           >
-            <div className="aspect-square rounded-2xl overflow-hidden glass p-1 group">
+            <div className="mb-4 flex items-center justify-between font-console text-xs uppercase tracking-[0.2em] text-gray-400">
+              <span>Identity Snapshot</span>
+              <span className="text-accent-purple">Active</span>
+            </div>
+            <div className="group aspect-square overflow-hidden rounded-2xl border border-accent-blue/20 p-1">
               <img
                 src={profileImage}
                 alt="Abhinav Bharadwaj Sarathy"
-                className="w-full h-full object-cover rounded-2xl grayscale group-hover:grayscale-0 transition-all duration-500"
+                className="h-full w-full rounded-2xl object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
               />
             </div>
           </motion.div>
         </motion.div>
 
-        {/* Highlights Grid */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.6, duration: 0.8 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          className="grid grid-cols-1 gap-6 md:grid-cols-3"
         >
           {highlights.map((highlight, index) => {
             const Icon = highlight.icon;
@@ -90,7 +94,7 @@ const About = () => {
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: 0.7 + index * 0.1, duration: 0.6 }}
                 whileHover={{ scale: 1.05, y: -5 }}
-                className="glass rounded-xl p-6 text-center group cursor-pointer"
+                className="terminal-card group cursor-pointer rounded-xl p-6 text-center"
               >
                 <Icon className={`w-12 h-12 mx-auto mb-4 ${highlight.color} group-hover:scale-110 transition-transform`} />
                 <p className="text-lg font-semibold">{highlight.text}</p>
