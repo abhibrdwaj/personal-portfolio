@@ -19,7 +19,7 @@ async def run(fixture_path: Path) -> int:
     os.environ.setdefault("EMBED_MODE", "mock")
     os.environ.setdefault("OPENAI_API_KEY", "sk-test")
 
-    from app.corpus_loader import _parse_frontmatter, default_corpus_root, load_vector_index
+    from app.corpus_loader import default_corpus_root, load_vector_index, parse_frontmatter
     from app.llm.client import create_llm_client
     from app.retrieval.chunker import chunk_text
     from app.retrieval.retrieve import retrieve
@@ -44,7 +44,7 @@ async def run(fixture_path: Path) -> int:
         chunk_index = int(row["chunk_index"])
         path = corpus_root / rel
         raw = path.read_text(encoding="utf-8")
-        meta, body = _parse_frontmatter(raw, path)
+        meta, body = parse_frontmatter(raw, path)
         parts = chunk_text(body)
         stem = meta.get("title", "").strip() or Path(rel).stem.replace("_", " ").title()
         part = parts[chunk_index]
