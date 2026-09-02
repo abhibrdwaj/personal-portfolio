@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Protocol
 
 from app.corpus_loader import load_vector_index
-from app.db import create_pool
+from app.db import create_pool, embedding_to_pgvector
 from app.llm.client import LLMClient
 from app.retrieval.index import VectorIndex
 from app.retrieval.retrieve import RetrievedChunk, retrieve
@@ -75,7 +75,7 @@ class PgVectorRetrievalBackend:
             ORDER BY embedding <=> $1::vector
             LIMIT $2
             """,
-            query_embedding,
+            embedding_to_pgvector(query_embedding),
             top_k,
             kinds_filter,
         )

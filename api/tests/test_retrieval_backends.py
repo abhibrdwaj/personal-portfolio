@@ -56,6 +56,10 @@ async def test_pgvector_backend_passes_allowed_kinds_as_sorted_list():
     await backend.retrieve([1.0, 0.0], top_k=5, min_score=-1.0, allowed_kinds={"project", "experience"})
     _, args = pool.calls[0]
     assert args[2] == ["experience", "project"]
+    # Regression guard: query_embedding must be a pgvector text literal (a
+    # string), not a raw Python list -- asyncpg has no codec for pgvector's
+    # `vector` type and raises DataError on a bare list.
+    assert args[0] == "[1.0,0.0]"
 
 
 @pytest.mark.asyncio

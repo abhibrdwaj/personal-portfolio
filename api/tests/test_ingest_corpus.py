@@ -80,3 +80,8 @@ async def test_ingest_upserts_every_corpus_chunk(monkeypatch, tmp_path):
     assert "corpus_chunks" in query
     assert args[0] == "about-0"
     assert args[5] == "abc123"
+    # Regression guard: embedding must be a pgvector text literal (a string
+    # like "[0.1,0.2]"), not a raw Python list -- asyncpg has no codec for
+    # pgvector's `vector` type and raises DataError on a bare list.
+    assert isinstance(args[6], str)
+    assert args[6].startswith("[") and args[6].endswith("]")

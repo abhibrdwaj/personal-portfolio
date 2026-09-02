@@ -27,7 +27,7 @@ async def ingest(
 ) -> int:
     from app.config import get_settings
     from app.corpus_loader import default_corpus_root, iter_corpus_chunk_rows
-    from app.db import create_pool
+    from app.db import create_pool, embedding_to_pgvector
     from app.llm.client import create_llm_client
 
     settings = get_settings()
@@ -68,7 +68,7 @@ async def ingest(
                         row.text,
                         _sha256_text(row.text),
                         corpus_version,
-                        embedding,
+                        embedding_to_pgvector(embedding),
                     )
     finally:
         await pool.close()
