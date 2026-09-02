@@ -10,10 +10,14 @@ import {
   ChevronRight,
   Briefcase,
   MessagesSquare,
+  Volume2,
+  Square,
+  Loader2,
 } from 'lucide-react'
 import {
   postChat,
   postJdFit,
+  postSpeak,
   type ChatMessagePayload,
   type JdFitResponsePayload,
 } from '@/lib/portfolioApi'
@@ -30,6 +34,7 @@ type Message = {
 
 const SESSION_STORAGE_KEY = 'portfolio_chat_session_id'
 const MAX_API_MESSAGES = 20
+const MAX_SPEAK_CHARS = 2000
 
 const hasApiBaseUrl = (): boolean =>
   Boolean(typeof import.meta.env.VITE_API_BASE_URL === 'string' && import.meta.env.VITE_API_BASE_URL.trim())
@@ -62,9 +67,13 @@ const Chatbot = () => {
   const [jdResult, setJdResult] = useState<JdFitResponsePayload | null>(null)
   const [expandedSourceIds, setExpandedSourceIds] = useState<Set<number>>(new Set())
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [speakingId, setSpeakingId] = useState<number | null>(null)
+  const [playingId, setPlayingId] = useState<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const jdTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioUrlRef = useRef<string | null>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -92,6 +101,48 @@ const Chatbot = () => {
       jdTextareaRef.current.focus()
     }
   }, [isOpen, panelMode])
+
+  const stopSpeaking = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current)
+      audioUrlRef.current = null
+    }
+    setPlayingId(null)
+  }, [])
+
+  useEffect(() => stopSpeaking, [stopSpeaking])
+
+  const handleSpeak = useCallback(
+    async (message: Message) => {
+      if (playingId === message.id) {
+        stopSpeaking()
+        return
+      }
+      stopSpeaking()
+      if (!hasApiBaseUrl()) return
+      setSpeakingId(message.id)
+      try {
+        const blob = await postSpeak(message.text)
+        const url = URL.createObjectURL(blob)
+        const audio = new Audio(url)
+        audioUrlRef.current = url
+        audioRef.current = audio
+        audio.addEventListener('ended', stopSpeaking)
+        audio.addEventListener('error', stopSpeaking)
+        setPlayingId(message.id)
+        await audio.play()
+      } catch {
+        stopSpeaking()
+      } finally {
+        setSpeakingId(null)
+      }
+    },
+    [playingId, stopSpeaking]
+  )
 
   const handleToggleSources = useCallback((messageId: number) => {
     setExpandedSourceIds((prev) => {
@@ -332,6 +383,31 @@ const Chatbot = () => {
                           >
                             <p className="text-sm whitespace-pre-wrap">{message.text}</p>
                           </div>
+                          {message.sender === 'bot' && (
+                            <button
+                              type="button"
+                              onClick={() => void handleSpeak(message)}
+                              disabled={
+                                speakingId === message.id || message.text.length > MAX_SPEAK_CHARS
+                              }
+                              aria-label={playingId === message.id ? 'Stop voice reply' : 'Play voice reply'}
+                              title={
+                                message.text.length > MAX_SPEAK_CHARS
+                                  ? 'Reply is too long to play'
+                                  : undefined
+                              }
+                              className="flex items-center gap-1 rounded px-1 py-0.5 text-xs text-gray-400 hover:bg-white/10 hover:text-accent-blue disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              {speakingId === message.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
+                              ) : playingId === message.id ? (
+                                <Square className="h-3 w-3" aria-hidden />
+                              ) : (
+                                <Volume2 className="h-3 w-3" aria-hidden />
+                              )}
+                              {playingId === message.id ? 'Stop' : 'Play in my voice'}
+                            </button>
+                          )}
                           {message.sender === 'bot' &&
                             message.citations &&
                             message.citations.length > 0 && (

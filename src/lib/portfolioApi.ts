@@ -52,6 +52,19 @@ export const postChat = async (
   return response.json() as Promise<ChatResponsePayload>
 }
 
+export const postSpeak = async (text: string): Promise<Blob> => {
+  const response = await fetch(buildUrl('/v1/chat/speak'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  })
+  if (!response.ok) {
+    const detail = response.status === 429 ? 'rate_limit_exceeded' : `http_${response.status}`
+    throw new Error(`Speak request failed: ${detail}`)
+  }
+  return response.blob()
+}
+
 export const postJdFit = async (jdText: string): Promise<JdFitResponsePayload> => {
   const response = await fetch(buildUrl('/v1/jd-fit'), {
     method: 'POST',

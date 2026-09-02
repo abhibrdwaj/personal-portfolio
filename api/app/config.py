@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     langfuse_host: str = Field(default="https://cloud.langfuse.com", alias="LANGFUSE_HOST")
     max_request_body_bytes: int = Field(default=512_000, alias="MAX_REQUEST_BODY_BYTES")
     rate_limit_per_minute: int = Field(default=30, alias="RATE_LIMIT_PER_MINUTE")
+    tts_mode: Literal["fish_audio", "mock"] = Field(default="mock", alias="TTS_MODE")
+    fish_audio_api_key: str = Field(default="", alias="FISH_AUDIO_API_KEY")
+    fish_audio_voice_id: str = Field(default="", alias="FISH_AUDIO_VOICE_ID")
+    fish_audio_model: str = Field(default="s2.1-pro-free", alias="FISH_AUDIO_MODEL")
 
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

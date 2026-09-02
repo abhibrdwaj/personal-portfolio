@@ -21,6 +21,10 @@ class ChatResponse(BaseModel):
     citations: list[Citation] = Field(default_factory=list)
 
 
+class SpeakRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+
+
 class JdFitRequest(BaseModel):
     jd_text: str = Field(min_length=50, max_length=24000)
 

@@ -222,6 +222,39 @@ npm run deploy
 This rebuilds the frontend with the production API URL baked in and
 publishes it to GitHub Pages via `gh-pages`.
 
+## 14. Enabling voice replies (POST /v1/chat/speak) on an already-live VM
+
+The Deployment reads all its env vars from the `portfolio-api-credentials`
+Secret via `envFrom`, so adding keys to that Secret is enough -- no edit to
+`api.yaml` needed. On the VM:
+
+```bash
+cd /opt/portfolio
+cat >> deploy/k3s/api-secret.yaml <<'EOF'
+  TTS_MODE: fish_audio
+  FISH_AUDIO_API_KEY: <your-real-key>
+  FISH_AUDIO_VOICE_ID: <your-real-voice-id>
+EOF
+kubectl apply -f deploy/k3s/api-secret.yaml
+kubectl -n portfolio rollout restart deployment/portfolio-api
+kubectl -n portfolio rollout status deployment/portfolio-api --timeout=120s
+```
+
+A `kubectl apply` on an existing Secret updates the object, but a running
+pod's env vars are only read at container start -- hence the explicit
+`rollout restart` after. Verify:
+
+```bash
+curl -sS -X POST https://abhinav-portfolio.duckdns.org/v1/chat/speak \
+  -H 'content-type: application/json' -d '{"text":"Testing my cloned voice."}' \
+  --output /tmp/speak-check.mp3
+file /tmp/speak-check.mp3   # expect an actual audio file, not an error JSON body
+```
+
+If it 502s, `kubectl -n portfolio logs deployment/portfolio-api | grep upstream_tts_failure`
+now logs the real upstream error (e.g. Fish Audio's 402 insufficient-API-credit
+response) instead of just the generic 502.
+
 ## Bugs hit during the first rollout (already fixed in code -- historical reference)
 
 The steps above already reflect these fixes; a fresh VM following this

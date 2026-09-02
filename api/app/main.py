@@ -7,12 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.handlers import chat as chat_handler
 from app.handlers import jd_fit as jd_fit_handler
+from app.handlers import speak as speak_handler
 from app.llm.client import create_llm_client
 from app.middleware.body_limit import MaxBodySizeMiddleware
 from app.retrieval.backends import create_retrieval_backend
 from app.middleware.rate_limit_http import V1RateLimitMiddleware
 from app.middleware.request_id import RequestIdMiddleware
 from app.rate_limit import RateLimiter
+from app.tts.client import create_tts_client
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,12 +28,20 @@ async def lifespan(app: FastAPI):
         chat_model=settings.openai_chat_model,
         embed_model=settings.openai_embed_model,
     )
+    tts = create_tts_client(
+        tts_mode=settings.tts_mode,
+        api_key=settings.fish_audio_api_key,
+        voice_id=settings.fish_audio_voice_id,
+        model=settings.fish_audio_model,
+    )
     app.state.settings = settings
     app.state.llm_client = llm
+    app.state.tts_client = tts
     app.state.retrieval_backend = await create_retrieval_backend(settings, llm)
     yield
     await app.state.retrieval_backend.aclose()
     await llm.aclose()
+    await tts.aclose()
 
 
 def create_app() -> FastAPI:
@@ -57,6 +67,7 @@ def create_app() -> FastAPI:
 
     app.include_router(chat_handler.router, prefix="/v1")
     app.include_router(jd_fit_handler.router, prefix="/v1")
+    app.include_router(speak_handler.router, prefix="/v1")
 
     return app
 
