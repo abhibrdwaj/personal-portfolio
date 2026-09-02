@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY pyproject.toml ./
 COPY app ./app
 COPY scripts ./scripts
+COPY corpus ./corpus
 
 RUN pip install --upgrade pip && pip install .
 
