@@ -54,9 +54,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # The Oracle VM is an Ampere (arm64) instance, but this runner is amd64 -
+      # QEMU lets buildx cross-compile the arm64 image here instead of on the VM.
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - uses: docker/setup-buildx-action@v3
+
       - uses: docker/build-push-action@v6
         with:
           context: api
+          platforms: linux/arm64
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/portfolio-api:${{ steps.vars.outputs.sha_short }}
