@@ -7,39 +7,52 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: {
-          DEFAULT: '#060b11',
-          light: '#0d151f',
+        // Dark developer-interface palette: near-black canvas, hairline borders,
+        // color reserved for real signal (git status), never decoration.
+        canvas: {
+          DEFAULT: '#0b0e14',
+          subtle: '#11151c',
+          inset: '#080a0f',
+          overlay: '#161b22',
         },
-        accent: {
-          blue: '#2ce2ff',
-          purple: '#afff40',
+        ink: {
+          DEFAULT: '#e6edf3',
+          muted: '#8b949e',
+          subtle: '#6e7681',
+        },
+        line: {
+          DEFAULT: '#262c36',
+          muted: '#1b212b',
+          strong: '#3d4551',
+        },
+        signal: {
+          link: '#4493f8',
+          success: '#3fb950',
+          attention: '#d29922',
         },
       },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-accent': 'linear-gradient(135deg, #2ce2ff 0%, #afff40 100%)',
+      fontFamily: {
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          '"Noto Sans"',
+          'Helvetica',
+          'Arial',
+          'sans-serif',
+        ],
+        mono: [
+          'ui-monospace',
+          '"SF Mono"',
+          'SFMono-Regular',
+          'Menlo',
+          'Consolas',
+          '"Liberation Mono"',
+          'monospace',
+        ],
       },
-      animation: {
-        'gradient': 'gradient 15s ease infinite',
-        'float': 'float 6s ease-in-out infinite',
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      },
-      keyframes: {
-        gradient: {
-          '0%, 100%': {
-            'background-size': '200% 200%',
-            'background-position': 'left center'
-          },
-          '50%': {
-            'background-size': '200% 200%',
-            'background-position': 'right center'
-          },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-20px)' },
-        },
+      maxWidth: {
+        measure: '72ch',
       },
     },
   },

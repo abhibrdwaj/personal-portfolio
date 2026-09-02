@@ -267,18 +267,13 @@ const Chatbot = () => {
         id="chatbot-button"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
         aria-label="Open chat with AI assistant"
-        className="neon-ring fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-accent-blue/20 bg-gradient-accent shadow-lg shadow-accent-blue/40 transition-all hover:shadow-xl hover:shadow-accent-blue/60"
+        className="fixed bottom-4 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-ink text-canvas shadow-lg shadow-black/40 transition-colors hover:bg-white sm:bottom-6 sm:right-6"
       >
-        <motion.div
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute inset-0 rounded-full bg-accent-blue/20"
-        />
-        <MessageCircle className="relative z-10 h-6 w-6 text-slate-900" />
+        <MessageCircle className="h-5 w-5" />
       </motion.button>
 
       <AnimatePresence>
@@ -298,48 +293,49 @@ const Chatbot = () => {
               role="button"
               tabIndex={0}
               aria-label="Close chat overlay"
-              className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-black/60"
             />
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="terminal-card neon-ring fixed bottom-6 right-6 z-50 flex h-[620px] max-h-[calc(100vh-3rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl shadow-2xl"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ duration: 0.15 }}
+              className="panel fixed inset-x-4 bottom-4 z-50 flex h-[min(620px,calc(100dvh-2rem))] flex-col overflow-hidden sm:inset-x-auto sm:bottom-6 sm:right-6 sm:h-[min(620px,calc(100dvh-3rem))] sm:w-full sm:max-w-md"
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
               aria-labelledby="chatbot-dialog-title"
             >
-              <div className="flex items-center justify-between border-b border-accent-blue/20 p-4">
+              <div className="flex items-center justify-between border-b border-line p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-accent">
-                    <Bot className="h-5 w-5 text-slate-900" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-ink-muted">
+                    <Bot className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 id="chatbot-dialog-title" className="font-semibold">
-                      Operator Console
+                    <h3 id="chatbot-dialog-title" className="text-sm font-medium text-ink">
+                      Ask Abhinav
                     </h3>
-                    <p className="font-console text-xs text-gray-400">Grounded on portfolio sources</p>
+                    <p className="font-mono text-xs text-ink-subtle">Answers grounded in résumé data</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
                   aria-label="Close chat"
-                  className="rounded-lg p-2 transition-colors hover:bg-white/10"
+                  className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-canvas-inset hover:text-ink"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="flex border-b border-accent-blue/20 px-2 pt-2">
+              <div className="flex border-b border-line px-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setPanelMode('chat')}
                   aria-pressed={panelMode === 'chat'}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-t-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    panelMode === 'chat' ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-accent-blue'
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-t-md px-3 py-2 text-sm transition-colors ${
+                    panelMode === 'chat' ? 'bg-canvas-inset text-ink' : 'text-ink-muted hover:text-ink'
                   }`}
                 >
                   <MessagesSquare className="h-4 w-4" aria-hidden />
@@ -349,8 +345,8 @@ const Chatbot = () => {
                   type="button"
                   onClick={() => setPanelMode('jd')}
                   aria-pressed={panelMode === 'jd'}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-t-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    panelMode === 'jd' ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-accent-purple'
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-t-md px-3 py-2 text-sm transition-colors ${
+                    panelMode === 'jd' ? 'bg-canvas-inset text-ink' : 'text-ink-muted hover:text-ink'
                   }`}
                 >
                   <Briefcase className="h-4 w-4" aria-hidden />
@@ -364,24 +360,24 @@ const Chatbot = () => {
                     {messages.map((message) => (
                       <motion.div
                         key={message.id}
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         {message.sender === 'bot' && (
-                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-accent">
-                            <Bot className="h-4 w-4 text-slate-900" />
+                          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-line text-ink-muted">
+                            <Bot className="h-3.5 w-3.5" />
                           </div>
                         )}
                         <div className="max-w-[75%] space-y-2">
                           <div
-                            className={`rounded-2xl px-4 py-2 ${
+                            className={`rounded-md px-3.5 py-2 text-sm leading-relaxed ${
                               message.sender === 'user'
-                                ? 'bg-gradient-accent text-slate-900'
-                                : 'terminal-card text-gray-200'
+                                ? 'bg-ink text-canvas'
+                                : 'panel-inset text-ink'
                             }`}
                           >
-                            <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                            <p className="whitespace-pre-wrap">{message.text}</p>
                           </div>
                           {message.sender === 'bot' && (
                             <button
@@ -396,7 +392,7 @@ const Chatbot = () => {
                                   ? 'Reply is too long to play'
                                   : undefined
                               }
-                              className="flex items-center gap-1 rounded px-1 py-0.5 text-xs text-gray-400 hover:bg-white/10 hover:text-accent-blue disabled:cursor-not-allowed disabled:opacity-40"
+                              className="flex items-center gap-1 rounded px-1 py-0.5 text-xs text-ink-subtle transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               {speakingId === message.id ? (
                                 <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
@@ -411,11 +407,11 @@ const Chatbot = () => {
                           {message.sender === 'bot' &&
                             message.citations &&
                             message.citations.length > 0 && (
-                              <div className="text-xs text-gray-400">
+                              <div className="text-xs text-ink-subtle">
                                 <button
                                   type="button"
                                   onClick={() => handleToggleSources(message.id)}
-                                  className="flex items-center gap-1 rounded px-1 py-0.5 hover:bg-white/10 hover:text-accent-blue"
+                                  className="flex items-center gap-1 rounded px-1 py-0.5 transition-colors hover:text-ink"
                                   aria-expanded={expandedSourceIds.has(message.id)}
                                   aria-controls={`sources-${message.id}`}
                                   id={`sources-trigger-${message.id}`}
@@ -431,12 +427,12 @@ const Chatbot = () => {
                                   <ul
                                     id={`sources-${message.id}`}
                                     role="list"
-                                    className="mt-1 space-y-1 border-l border-accent-blue/20 pl-3"
+                                    className="mt-1 space-y-1 border-l border-line pl-3"
                                   >
                                     {message.citations.map((c) => (
                                       <li key={c.chunk_id}>
-                                        <span className="text-gray-300">{c.title}</span>
-                                        <span className="text-gray-500"> · {c.chunk_id}</span>
+                                        <span className="text-ink-muted">{c.title}</span>
+                                        <span className="text-ink-subtle"> · {c.chunk_id}</span>
                                       </li>
                                     ))}
                                   </ul>
@@ -445,8 +441,8 @@ const Chatbot = () => {
                             )}
                         </div>
                         {message.sender === 'user' && (
-                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white/10">
-                            <User className="h-4 w-4 text-white" />
+                          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-line text-ink-muted">
+                            <User className="h-3.5 w-3.5" />
                           </div>
                         )}
                       </motion.div>
@@ -454,20 +450,20 @@ const Chatbot = () => {
 
                     {isTyping && (
                       <motion.div
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="flex justify-start gap-3"
                       >
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-accent">
-                          <Bot className="h-4 w-4 text-slate-900" />
+                        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-line text-ink-muted">
+                          <Bot className="h-3.5 w-3.5" />
                         </div>
-                        <div className="terminal-card rounded-2xl px-4 py-3">
+                        <div className="panel-inset rounded-md px-4 py-3">
                           <div className="flex gap-1">
                             {[0, 1, 2].map((i) => (
                               <motion.div
                                 key={i}
-                                className="h-2 w-2 rounded-full bg-accent-purple"
-                                animate={{ y: [0, -8, 0] }}
+                                className="h-1.5 w-1.5 rounded-full bg-ink-subtle"
+                                animate={{ y: [0, -6, 0] }}
                                 transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.2 }}
                               />
                             ))}
@@ -478,7 +474,7 @@ const Chatbot = () => {
                     <div ref={messagesEndRef} />
                   </div>
 
-                  <div className="border-t border-accent-blue/20 p-4">
+                  <div className="border-t border-line p-4">
                     <div className="flex gap-2">
                       <input
                         ref={inputRef}
@@ -488,23 +484,23 @@ const Chatbot = () => {
                         onKeyDown={handleKeyDown}
                         placeholder="Ask me anything..."
                         aria-label="Chat message"
-                        className="flex-1 rounded-lg border border-accent-blue/20 bg-background-light px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-blue"
+                        className="flex-1 rounded-md border border-line bg-canvas-inset px-3 py-2 text-sm text-ink placeholder-ink-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-signal-link"
                       />
                       <button
                         type="button"
                         onClick={() => void handleSend()}
                         disabled={!input.trim() || isTyping}
                         aria-label="Send message"
-                        className="rounded-lg bg-gradient-accent px-4 py-2 text-slate-900 transition-all hover:shadow-lg hover:shadow-accent-blue/50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-md bg-ink px-3.5 py-2 text-canvas transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        <Send className="h-5 w-5 text-white" />
+                        <Send className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                 </>
               ) : (
                 <div className="flex flex-1 flex-col gap-3 overflow-hidden p-4">
-                  <p className="font-console text-xs text-gray-400">
+                  <p className="font-mono text-xs text-ink-subtle">
                     Paste a job description for a structured match view (informational only).
                   </p>
                   <textarea
@@ -514,37 +510,37 @@ const Chatbot = () => {
                     placeholder="Paste the full JD (50+ characters)..."
                     aria-label="Job description text"
                     rows={10}
-                    className="min-h-0 flex-1 resize-none rounded-lg border border-accent-blue/20 bg-background-light p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-blue"
+                    className="min-h-0 flex-1 resize-none rounded-md border border-line bg-canvas-inset p-3 text-sm text-ink placeholder-ink-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-signal-link"
                   />
-                  {jdError && <p className="text-sm text-amber-300">{jdError}</p>}
+                  {jdError && <p className="text-sm text-signal-attention">{jdError}</p>}
                   <button
                     type="button"
                     onClick={() => void handleAnalyzeJd()}
                     disabled={jdLoading || jdInput.trim().length < 50}
-                    className="rounded-lg bg-gradient-accent py-2 text-sm font-medium text-slate-900 transition-all hover:shadow-lg hover:shadow-accent-blue/50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-md bg-ink py-2 text-sm font-medium text-canvas transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {jdLoading ? 'Analyzing…' : 'Analyze fit'}
                   </button>
                   {jdResult && (
-                    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto rounded-lg border border-accent-blue/20 bg-black/20 p-3 text-sm">
-                      <p className="font-medium text-white">{jdResult.summary}</p>
-                      <table className="w-full text-left text-xs text-gray-200">
+                    <div className="panel-inset min-h-0 flex-1 space-y-3 overflow-y-auto p-3 text-sm">
+                      <p className="font-medium text-ink">{jdResult.summary}</p>
+                      <table className="w-full text-left text-xs text-ink-muted">
                         <thead>
-                          <tr className="border-b border-accent-blue/20 text-gray-400">
-                            <th className="py-1 pr-2">Requirement</th>
-                            <th className="py-1 pr-2">Fit</th>
+                          <tr className="border-b border-line text-ink-subtle">
+                            <th className="py-1 pr-2 font-normal">Requirement</th>
+                            <th className="py-1 pr-2 font-normal">Fit</th>
                           </tr>
                         </thead>
                         <tbody>
                           {jdResult.match_rows.map((row) => (
-                            <tr key={row.requirement} className="border-b border-white/5 align-top">
+                            <tr key={row.requirement} className="border-b border-line-muted align-top">
                               <td className="py-2 pr-2">{row.requirement}</td>
                               <td className="py-2 pr-2 capitalize">{row.fit}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
-                      <ul className="list-disc space-y-1 pl-4 text-xs text-gray-400">
+                      <ul className="list-disc space-y-1 pl-4 text-xs text-ink-subtle">
                         {jdResult.disclaimers.map((d) => (
                           <li key={d}>{d}</li>
                         ))}
