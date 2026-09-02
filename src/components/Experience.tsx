@@ -1,167 +1,136 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { ChevronDown, Building2 } from 'lucide-react';
+import { ChevronDown, Award, Building2 } from 'lucide-react';
 import { experiences } from '@/data/experience';
 import freshworksLogo from '@/assets/logos/freshworks.svg';
 import rutgersLogo from '@/assets/logos/rutgers-r.svg';
-import stealthStartupLogo from '@/assets/logos/stealth-startup.png';
+import stealthStartupLogo from '@/assets/logos/kidture-health.png';
+
+const companyLogoMap: Record<string, string> = {
+  Freshworks: freshworksLogo,
+  'Rutgers University': rutgersLogo,
+  'Kidture Health': stealthStartupLogo,
+};
 
 const Experience = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const companyLogoMap: Record<string, string> = {
-    'Freshworks': freshworksLogo,
-    'Rutgers University': rutgersLogo,
-    'Kidture Health': stealthStartupLogo
-  };
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
   return (
-    <section id="experience" ref={ref} className="section-shell py-24 px-4 sm:px-6 lg:px-8 bg-background-light/50">
-      <div className="max-w-6xl mx-auto">
-        <p className="mb-4 text-center font-console text-xs uppercase tracking-[0.25em] text-accent-purple">
-          Career / Deployment Log
-        </p>
-        <motion.h2
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="mb-16 text-center text-4xl font-bold sm:text-5xl"
-        >
-          Experience <span className="text-gradient">Timeline</span>
-        </motion.h2>
+    <section id="experience" ref={ref} className="rule mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+      <h2 className="mb-10 text-2xl font-semibold tracking-[-0.01em] text-ink sm:text-3xl">Experience</h2>
 
-        <div className="relative">
-          {/* Timeline Line */}
-          <motion.div
-            initial={{ scaleY: 0 }}
-            animate={isInView ? { scaleY: 1 } : {}}
-            transition={{ duration: 1.5, ease: 'easeInOut' }}
-            className="absolute bottom-0 left-1/2 top-0 hidden w-0.5 -translate-x-1/2 transform bg-gradient-to-b from-accent-blue via-accent-purple to-accent-blue md:block"
-          />
+      <div className="relative">
+        <motion.div
+          initial={{ scaleY: 0 }}
+          animate={isInView ? { scaleY: 1 } : {}}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          style={{ transformOrigin: 'top' }}
+          className="absolute bottom-0 left-[15px] top-2 hidden w-px bg-line sm:block"
+        />
 
-          {/* Experience Cards */}
-          <div className="space-y-12">
-            {experiences.map((exp, index) => {
-              const isLeft = index % 2 === 0;
-              const isExpanded = expandedIndex === index;
-              const companyLogo = companyLogoMap[exp.company];
+        <div className="space-y-3">
+          {experiences.map((exp, index) => {
+            const isExpanded = expandedIndex === index;
+            const isCurrent = exp.duration.toLowerCase().includes('present');
+            const companyLogo = companyLogoMap[exp.company];
 
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: isLeft ? -50 : 50 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ delay: index * 0.2, duration: 0.8 }}
-                  className={`relative flex items-center ${
-                    isLeft ? 'md:flex-row' : 'md:flex-row-reverse'
-                  } flex-col`}
-                >
-                  {/* Timeline Dot */}
-                  <div className="absolute left-1/2 z-10 hidden h-4 w-4 -translate-x-1/2 transform rounded-full border-4 border-background-light bg-gradient-accent md:block" />
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 12 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: index * 0.06, duration: 0.4 }}
+                className="relative sm:pl-10"
+              >
+                <span
+                  className={`absolute left-[11px] top-[26px] hidden h-2.5 w-2.5 rounded-full ring-4 ring-canvas sm:block ${
+                    isCurrent ? 'bg-signal-success' : 'bg-line-strong'
+                  }`}
+                  aria-hidden
+                />
 
-                  {/* Card */}
-                  <div
-                    className={`w-full md:w-5/12 ${
-                      isLeft ? 'md:pr-8' : 'md:pl-8'
-                    }`}
+                <div className="panel overflow-hidden">
+                  <button
+                    onClick={() => setExpandedIndex(isExpanded ? null : index)}
+                    className="flex w-full items-start gap-4 p-4 text-left sm:p-5"
+                    aria-expanded={isExpanded}
                   >
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      className="terminal-card cursor-pointer rounded-xl p-6"
-                      onClick={() => setExpandedIndex(isExpanded ? null : index)}
-                    >
-                      {/* Header */}
-                      <div className="flex items-start gap-4 mb-4">
-                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-white p-2">
-                          {companyLogo ? (
-                            <img
-                              src={companyLogo}
-                              alt={`${exp.company} logo`}
-                              className="h-full w-full object-contain"
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          ) : (
-                            <Building2 className="h-6 w-6 text-slate-900" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold mb-1">{exp.role}</h3>
-                          <p className="text-accent-blue font-semibold">{exp.company}</p>
-                          <p className="text-sm text-gray-400 mt-1">{exp.duration}</p>
-                        </div>
-                        <ChevronDown
-                          className={`w-5 h-5 text-gray-400 transition-transform ${
-                            isExpanded ? 'rotate-180' : ''
-                          }`}
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-white p-1.5">
+                      {companyLogo ? (
+                        <img
+                          src={companyLogo}
+                          alt=""
+                          className="h-full w-full object-contain"
+                          loading="lazy"
+                          decoding="async"
                         />
-                      </div>
-
-                      {/* Key Achievements (Always visible) */}
-                      <ul className="space-y-2 mb-4">
-                        {exp.achievements.slice(0, 1).map((achievement, i) => (
-                          <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
-                            <span className="mt-1 text-accent-purple">▸</span>
-                            <span>{achievement}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* Expanded Content */}
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="mt-4 border-t border-accent-blue/20 pt-4"
-                        >
-                          <ul className="space-y-2 mb-4">
-                            {exp.achievements.slice(1).map((achievement, i) => (
-                              <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
-                                <span className="text-accent-purple mt-1">▸</span>
-                                <span>{achievement}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          <div className="flex flex-wrap gap-2">
-                            {exp.tech.map((tech, i) => (
-                              <span
-                                key={i}
-                                className="px-3 py-1 text-xs rounded-full bg-white/5 text-gray-300"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                        </motion.div>
+                      ) : (
+                        <Building2 className="h-5 w-5 text-canvas" />
                       )}
+                    </div>
 
-                      {/* Tech Stack Tags (Collapsed) */}
-                      {!isExpanded && (
-                        <div className="flex flex-wrap gap-2 mt-4">
-                          {exp.tech.slice(0, 3).map((tech, i) => (
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                        <h3 className="font-medium text-ink">
+                          {exp.role} <span className="text-ink-muted">· {exp.company}</span>
+                        </h3>
+                        <span className="whitespace-nowrap font-mono text-xs text-ink-subtle">
+                          {exp.duration}
+                        </span>
+                      </div>
+                      {exp.location && <p className="mt-0.5 text-xs text-ink-subtle">{exp.location}</p>}
+
+                      {exp.highlights && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {exp.highlights.map((highlight) => (
                             <span
-                              key={i}
-                              className="px-3 py-1 text-xs rounded-full bg-white/5 text-gray-300"
+                              key={highlight}
+                              className="flex items-center gap-1 rounded-md border border-line px-2 py-0.5 text-xs text-ink-muted"
                             >
-                              {tech}
+                              <Award className="h-3 w-3 text-signal-attention" />
+                              {highlight}
                             </span>
                           ))}
-                          {exp.tech.length > 3 && (
-                            <span className="px-3 py-1 text-xs rounded-full bg-white/5 text-gray-400">
-                              +{exp.tech.length - 3} more
-                            </span>
-                          )}
                         </div>
                       )}
-                    </motion.div>
+                    </div>
+
+                    <ChevronDown
+                      className={`mt-1 h-4 w-4 flex-shrink-0 text-ink-subtle transition-transform ${
+                        isExpanded ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  <div className="px-4 pb-4 sm:pl-[4.75rem] sm:pr-5 sm:pb-5">
+                    <ul className="space-y-1.5">
+                      {(isExpanded ? exp.achievements : exp.achievements.slice(0, 1)).map((achievement, i) => (
+                        <li key={i} className="flex gap-2 text-sm leading-relaxed text-ink-muted">
+                          <span className="mt-[3px] font-mono text-xs text-signal-success">+</span>
+                          <span>{achievement}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {isExpanded && (
+                      <div className="mt-4 flex flex-wrap gap-1.5">
+                        {exp.tech.map((tech) => (
+                          <span
+                            key={tech}
+                            className="rounded border border-line-muted px-2 py-0.5 font-mono text-xs text-ink-muted"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

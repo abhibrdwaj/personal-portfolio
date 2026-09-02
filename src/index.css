@@ -1,132 +1,83 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --console-bg: #03070f;
-  --console-bg-soft: #09111c;
-  --console-panel: #0d1827;
-  --console-panel-bright: #14263a;
-  --console-line: #244760;
-  --console-text: #e5f3ff;
-  --console-text-muted: #95b3c8;
-  --console-cyan: #2ce2ff;
-  --console-lime: #afff40;
-  --console-amber: #ffb44c;
-}
-
 @layer base {
+  * {
+    @apply border-line;
+  }
+
   body {
-    @apply bg-background text-white antialiased;
-    font-family: 'Sora', sans-serif;
-    letter-spacing: 0.01em;
-    background-image:
-      radial-gradient(circle at 10% 20%, rgba(44, 226, 255, 0.2), transparent 32%),
-      radial-gradient(circle at 82% 6%, rgba(175, 255, 64, 0.13), transparent 26%),
-      radial-gradient(circle at 50% 120%, rgba(255, 180, 76, 0.08), transparent 35%),
-      linear-gradient(180deg, #03070f 0%, #09111c 55%, #03070f 100%);
+    @apply bg-canvas text-ink font-sans antialiased;
+    font-feature-settings: 'kern' 1, 'liga' 1;
   }
 
   html {
     scroll-behavior: smooth;
   }
+
+  /* Browser surfaces carry the design too. */
+  ::selection {
+    background: color-mix(in srgb, var(--signal-link, #4493f8) 35%, transparent);
+    color: #e6edf3;
+  }
+
+  :focus-visible {
+    outline: 2px solid #4493f8;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  a {
+    text-underline-offset: 3px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0b0e14;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #262c36;
+    border: 3px solid #0b0e14;
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3d4551;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #262c36 #0b0e14;
+  }
 }
 
 @layer utilities {
-  .font-console {
-    font-family: 'IBM Plex Mono', monospace;
+  .tabular {
+    font-variant-numeric: tabular-nums;
   }
 
-  .glass {
-    @apply border backdrop-blur-md;
-    border-color: color-mix(in srgb, var(--console-line) 78%, transparent);
-    background: linear-gradient(145deg, rgba(16, 28, 42, 0.75), rgba(16, 28, 42, 0.5));
-    box-shadow:
-      0 12px 40px rgba(2, 11, 21, 0.5),
-      inset 0 1px 0 rgba(202, 245, 255, 0.12);
+  /* A bordered surface, no shadow, no blur — the only elevation grammar in this world. */
+  .panel {
+    @apply rounded-md border border-line bg-canvas-subtle;
   }
 
-  .terminal-card {
-    @apply rounded-2xl border;
-    border-color: color-mix(in srgb, var(--console-line) 85%, transparent);
-    background: linear-gradient(165deg, rgba(16, 28, 42, 0.85), rgba(10, 20, 31, 0.68));
-    box-shadow:
-      inset 0 1px 0 rgba(161, 230, 255, 0.1),
-      0 26px 45px rgba(1, 8, 17, 0.65);
+  .panel-inset {
+    @apply rounded-md border border-line-muted bg-canvas-inset;
   }
 
-  .section-shell {
-    @apply relative overflow-hidden;
+  /* Hairline row divider, the only separator in this world. */
+  .rule {
+    @apply border-t border-line-muted;
   }
 
-  .section-shell::before {
-    content: '';
-    @apply pointer-events-none absolute inset-0;
-    background-image:
-      linear-gradient(rgba(102, 151, 183, 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(102, 151, 183, 0.08) 1px, transparent 1px);
-    background-size: 24px 24px;
-    opacity: 0.35;
-    mask-image: radial-gradient(circle at center, black 20%, transparent 80%);
-  }
-
-  .scanline {
-    @apply pointer-events-none absolute inset-0;
-    background: linear-gradient(
-      180deg,
-      rgba(44, 226, 255, 0) 0%,
-      rgba(44, 226, 255, 0.09) 48%,
-      rgba(44, 226, 255, 0) 100%
-    );
-    animation: scanline 3.8s linear infinite;
-  }
-
-  .text-gradient {
-    background: linear-gradient(95deg, var(--console-cyan) 10%, #9cf8ff 40%, var(--console-lime) 100%);
-    @apply bg-clip-text text-transparent;
-    background-size: 200% 200%;
-    animation: text-flow 6s ease-in-out infinite;
-  }
-
-  .soft-divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(44, 226, 255, 0.45), transparent);
-  }
-
-  .neon-ring {
-    box-shadow:
-      0 0 0 1px rgba(44, 226, 255, 0.2),
-      0 0 18px rgba(44, 226, 255, 0.22),
-      0 0 30px rgba(175, 255, 64, 0.12);
-  }
-
-  .aurora-orb {
-    @apply pointer-events-none fixed rounded-full blur-3xl;
-    mix-blend-mode: screen;
-    opacity: 0.4;
-    z-index: 0;
-  }
-}
-
-@keyframes scanline {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(120%);
-  }
-}
-
-@keyframes text-flow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
+  /* A single-pixel signal dot, borrowed from GitHub's repo-language indicator. */
+  .dot {
+    @apply inline-block h-2.5 w-2.5 shrink-0 rounded-full;
   }
 }

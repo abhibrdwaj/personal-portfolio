@@ -34,3 +34,4 @@ deploy/k3s/api-secret.yaml
 # Local planning/corpus docs (superpowers specs/plans, master resume corpus) -
 # kept on disk, not tracked in git.
 docs/
+PRODUCT.md
