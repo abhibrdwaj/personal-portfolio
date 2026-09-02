@@ -28,3 +28,4 @@ api/.env
 __pycache__/
 *.py[cod]
 deploy/k3s/postgres-secret.yaml
+deploy/k3s/api-secret.yaml
