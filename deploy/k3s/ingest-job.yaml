@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: corpus-ingest
+  namespace: portfolio
+spec:
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ingest
+          image: ghcr.io/abhibrdwaj/portfolio-api:latest
+          command:
+            - python
+            - scripts/ingest_corpus.py
+            - --corpus-version
+            - REPLACE_ME_GIT_SHA
+          envFrom:
+            - secretRef:
+                name: portfolio-api-credentials
