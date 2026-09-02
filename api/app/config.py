@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     prompt_version: str = Field(default="chat-v1", alias="PROMPT_VERSION")
     environment: str = Field(default="dev", alias="ENVIRONMENT")
     embed_mode: Literal["openai", "mock"] = Field(default="openai", alias="EMBED_MODE")
+    vector_backend: Literal["in_memory", "pgvector"] = Field(default="in_memory", alias="VECTOR_BACKEND")
+    database_url: str = Field(default="", alias="DATABASE_URL")
     langfuse_public_key: str = Field(default="", alias="LANGFUSE_PUBLIC_KEY")
     langfuse_secret_key: str = Field(default="", alias="LANGFUSE_SECRET_KEY")
     langfuse_host: str = Field(default="https://cloud.langfuse.com", alias="LANGFUSE_HOST")

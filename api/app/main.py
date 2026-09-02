@@ -5,11 +5,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.corpus_loader import load_vector_index
 from app.handlers import chat as chat_handler
 from app.handlers import jd_fit as jd_fit_handler
 from app.llm.client import create_llm_client
 from app.middleware.body_limit import MaxBodySizeMiddleware
+from app.retrieval.backends import create_retrieval_backend
 from app.middleware.rate_limit_http import V1RateLimitMiddleware
 from app.middleware.request_id import RequestIdMiddleware
 from app.rate_limit import RateLimiter
@@ -26,11 +26,11 @@ async def lifespan(app: FastAPI):
         chat_model=settings.openai_chat_model,
         embed_model=settings.openai_embed_model,
     )
-    index = await load_vector_index(llm)
     app.state.settings = settings
     app.state.llm_client = llm
-    app.state.vector_index = index
+    app.state.retrieval_backend = await create_retrieval_backend(settings, llm)
     yield
+    await app.state.retrieval_backend.aclose()
     await llm.aclose()
 
 

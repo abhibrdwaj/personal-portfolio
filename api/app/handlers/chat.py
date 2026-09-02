@@ -4,13 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.config import Settings
 from app.corpus_loader import PUBLIC_CHAT_KINDS
-from app.deps import get_app_settings, get_llm_client, get_vector_index
+from app.deps import get_app_settings, get_llm_client, get_retrieval_backend
 from app.llm.client import LLMClient
-from app.retrieval.index import VectorIndex
 from app.models import ChatRequest, ChatResponse, Citation
 from app.observability.trace import TraceRecorder, payload_fingerprint
 from app.prompts.chat import chat_system_prompt, chat_user_prompt
-from app.retrieval.retrieve import retrieve
+from app.retrieval.backends import RetrievalBackend
 
 router = APIRouter(tags=["chat"])
 
@@ -46,7 +45,7 @@ async def chat(
     req: ChatRequest,
     request: Request,
     llm: LLMClient = Depends(get_llm_client),
-    index: VectorIndex = Depends(get_vector_index),
+    backend: RetrievalBackend = Depends(get_retrieval_backend),
     settings: Settings = Depends(get_app_settings),
 ) -> ChatResponse:
     rid = getattr(request.state, "request_id", "unknown")
@@ -83,7 +82,7 @@ async def chat(
     )
 
     t_vec = time.perf_counter()
-    chunks = retrieve(index, q_emb, top_k=5, min_score=0.12, allowed_kinds=PUBLIC_CHAT_KINDS)
+    chunks = await backend.retrieve(q_emb, top_k=5, min_score=0.12, allowed_kinds=PUBLIC_CHAT_KINDS)
     trace.span(
         "retrieve",
         (time.perf_counter() - t_vec) * 1000,

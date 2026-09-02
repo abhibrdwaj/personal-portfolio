@@ -39,7 +39,7 @@ ALLOWED_KIND_BY_TOP_DIR = {
 PUBLIC_CHAT_KINDS = ALLOWED_KINDS - {"eligibility"}
 
 
-def _parse_frontmatter(raw: str, path: Path) -> tuple[dict[str, str], str]:
+def parse_frontmatter(raw: str, path: Path) -> tuple[dict[str, str], str]:
     lines = raw.splitlines()
     if not lines or lines[0].strip() != "---":
         raise RuntimeError(f"Corpus file missing frontmatter start '---': {path}")
@@ -74,26 +74,25 @@ def _infer_folder_kind_policy(path: Path, root: Path) -> set[str] | None:
     return ALLOWED_KIND_BY_TOP_DIR.get(top)
 
 
-async def load_vector_index(
-    llm: LLMClient,
-    corpus_root: Path | None = None,
-    *,
-    max_chars: int = 1200,
-) -> VectorIndex:
-    root = corpus_root or default_corpus_root()
+@dataclass(frozen=True)
+class CorpusChunkRow:
+    chunk_id: str
+    title: str
+    kind: str
+    text: str
+    source_file: str
+    embed_input: str
+
+
+def iter_corpus_chunk_rows(root: Path, *, max_chars: int = 1200) -> list[CorpusChunkRow]:
     paths = sorted(root.glob("**/*.md"))
     if not paths:
         raise RuntimeError(f"No markdown corpus files under {root}")
 
-    chunk_ids: list[str] = []
-    titles: list[str] = []
-    kinds: list[str] = []
-    texts: list[str] = []
-    embed_inputs: list[str] = []
-
+    rows: list[CorpusChunkRow] = []
     for path in paths:
         raw = path.read_text(encoding="utf-8")
-        meta, body = _parse_frontmatter(raw, path)
+        meta, body = parse_frontmatter(raw, path)
         kind = meta.get("kind", "").strip().lower()
         if not kind:
             raise RuntimeError(f"Corpus file requires frontmatter key `kind`: {path}")
@@ -109,13 +108,34 @@ async def load_vector_index(
 
         title = meta.get("title", "").strip() or path.stem.replace("_", " ").title()
         parts = chunk_text(body, max_chars=max_chars)
+        rel = path.relative_to(root).as_posix()
         for i, part in enumerate(parts):
-            cid = f"{path.stem}-{i}"
-            chunk_ids.append(cid)
-            titles.append(title)
-            kinds.append(kind)
-            texts.append(part)
-            embed_inputs.append(f"{title}\n\nkind: {kind}\n\n{part}")
+            rows.append(
+                CorpusChunkRow(
+                    chunk_id=f"{path.stem}-{i}",
+                    title=title,
+                    kind=kind,
+                    text=part,
+                    source_file=rel,
+                    embed_input=f"{title}\n\nkind: {kind}\n\n{part}",
+                )
+            )
+    return rows
 
-    embeddings = await llm.embed(embed_inputs)
-    return build_index(chunk_ids, titles, kinds, texts, embeddings)
+
+async def load_vector_index(
+    llm: LLMClient,
+    corpus_root: Path | None = None,
+    *,
+    max_chars: int = 1200,
+) -> VectorIndex:
+    root = corpus_root or default_corpus_root()
+    rows = iter_corpus_chunk_rows(root, max_chars=max_chars)
+    embeddings = await llm.embed([r.embed_input for r in rows])
+    return build_index(
+        [r.chunk_id for r in rows],
+        [r.title for r in rows],
+        [r.kind for r in rows],
+        [r.text for r in rows],
+        embeddings,
+    )

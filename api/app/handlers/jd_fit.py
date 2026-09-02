@@ -5,9 +5,8 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.config import Settings
-from app.deps import get_app_settings, get_llm_client, get_vector_index
+from app.deps import get_app_settings, get_llm_client, get_retrieval_backend
 from app.llm.client import LLMClient
-from app.retrieval.index import VectorIndex
 from app.models import JdFitRequest, JdFitResponse
 from app.observability.trace import TraceRecorder, payload_fingerprint
 from app.prompts.jd_fit import (
@@ -16,7 +15,7 @@ from app.prompts.jd_fit import (
     jd_extract_system_prompt,
     jd_extract_user_prompt,
 )
-from app.retrieval.retrieve import retrieve
+from app.retrieval.backends import RetrievalBackend
 
 router = APIRouter(tags=["jd_fit"])
 
@@ -40,7 +39,7 @@ async def jd_fit(
     req: JdFitRequest,
     request: Request,
     llm: LLMClient = Depends(get_llm_client),
-    index: VectorIndex = Depends(get_vector_index),
+    backend: RetrievalBackend = Depends(get_retrieval_backend),
     settings: Settings = Depends(get_app_settings),
 ) -> JdFitResponse:
     rid = getattr(request.state, "request_id", "unknown")
@@ -88,7 +87,7 @@ async def jd_fit(
         except Exception as exc:  # noqa: BLE001
             trace.span("retrieve_per_cluster", (time.perf_counter() - t_ret) * 1000, error=str(exc))
             raise HTTPException(status_code=502, detail="upstream_llm_failure") from exc
-        hits = retrieve(index, emb, top_k=4, min_score=0.1)
+        hits = await backend.retrieve(emb, top_k=4, min_score=0.1)
         for h in hits:
             if h.chunk_id not in seen_ids:
                 seen_ids.add(h.chunk_id)
