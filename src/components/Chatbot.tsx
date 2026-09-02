@@ -11,7 +11,8 @@ import {
   Briefcase,
   MessagesSquare,
   Volume2,
-  Square,
+  Play,
+  Pause,
   Loader2,
 } from 'lucide-react'
 import {
@@ -69,11 +70,16 @@ const Chatbot = () => {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [speakingId, setSpeakingId] = useState<number | null>(null)
   const [playingId, setPlayingId] = useState<number | null>(null)
+  const [isPaused, setIsPaused] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const jdTextareaRef = useRef<HTMLTextAreaElement>(null)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const audioUrlRef = useRef<string | null>(null)
+  // Per-message audio cache: once a reply has been voiced, its Audio element and
+  // blob URL are kept here so re-pressing play never re-calls Fish Audio and can
+  // resume/replay instantly, bound to that message's id regardless of what else
+  // has played since.
+  const audioCacheRef = useRef<Map<number, HTMLAudioElement>>(new Map())
+  const audioUrlCacheRef = useRef<Map<number, string>>(new Map())
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -102,46 +108,90 @@ const Chatbot = () => {
     }
   }, [isOpen, panelMode])
 
-  const stopSpeaking = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current = null
+  // Pauses whichever cached audio is currently active, without discarding it —
+  // the element and its blob URL stay bound to that message id so it can be
+  // resumed or replayed later with no re-fetch.
+  const pauseActiveAudio = useCallback(() => {
+    if (playingId !== null) {
+      audioCacheRef.current.get(playingId)?.pause()
     }
-    if (audioUrlRef.current) {
-      URL.revokeObjectURL(audioUrlRef.current)
-      audioUrlRef.current = null
-    }
+    setIsPaused(true)
+  }, [playingId])
+
+  const releaseAllAudio = useCallback(() => {
+    audioCacheRef.current.forEach((audio) => {
+      audio.pause()
+      audio.src = ''
+    })
+    audioCacheRef.current.clear()
+    audioUrlCacheRef.current.forEach((url) => URL.revokeObjectURL(url))
+    audioUrlCacheRef.current.clear()
     setPlayingId(null)
+    setIsPaused(false)
   }, [])
 
-  useEffect(() => stopSpeaking, [stopSpeaking])
+  useEffect(() => releaseAllAudio, [releaseAllAudio])
 
   const handleSpeak = useCallback(
     async (message: Message) => {
+      // Same reply already bound as the active one: just toggle play/pause,
+      // preserving position — no network call either way.
       if (playingId === message.id) {
-        stopSpeaking()
+        const audio = audioCacheRef.current.get(message.id)
+        if (!audio) return
+        if (audio.paused) {
+          if (audio.ended) audio.currentTime = 0
+          setIsPaused(false)
+          await audio.play()
+        } else {
+          audio.pause()
+          setIsPaused(true)
+        }
         return
       }
-      stopSpeaking()
+
+      // Switching to a different reply: pause (don't discard) whatever was active.
+      pauseActiveAudio()
+
+      const cached = audioCacheRef.current.get(message.id)
+      if (cached) {
+        setPlayingId(message.id)
+        setIsPaused(false)
+        cached.currentTime = cached.ended ? 0 : cached.currentTime
+        await cached.play()
+        return
+      }
+
       if (!hasApiBaseUrl()) return
       setSpeakingId(message.id)
       try {
         const blob = await postSpeak(message.text)
         const url = URL.createObjectURL(blob)
         const audio = new Audio(url)
-        audioUrlRef.current = url
-        audioRef.current = audio
-        audio.addEventListener('ended', stopSpeaking)
-        audio.addEventListener('error', stopSpeaking)
+        audioUrlCacheRef.current.set(message.id, url)
+        audioCacheRef.current.set(message.id, audio)
+        audio.addEventListener('ended', () => setIsPaused(true))
+        audio.addEventListener('error', () => {
+          audioCacheRef.current.delete(message.id)
+          const staleUrl = audioUrlCacheRef.current.get(message.id)
+          if (staleUrl) {
+            URL.revokeObjectURL(staleUrl)
+            audioUrlCacheRef.current.delete(message.id)
+          }
+          setPlayingId(null)
+          setIsPaused(false)
+        })
         setPlayingId(message.id)
+        setIsPaused(false)
         await audio.play()
       } catch {
-        stopSpeaking()
+        setPlayingId(null)
+        setIsPaused(false)
       } finally {
         setSpeakingId(null)
       }
     },
-    [playingId, stopSpeaking]
+    [playingId, pauseActiveAudio]
   )
 
   const handleToggleSources = useCallback((messageId: number) => {
@@ -386,7 +436,13 @@ const Chatbot = () => {
                               disabled={
                                 speakingId === message.id || message.text.length > MAX_SPEAK_CHARS
                               }
-                              aria-label={playingId === message.id ? 'Stop voice reply' : 'Play voice reply'}
+                              aria-label={
+                                playingId === message.id
+                                  ? isPaused
+                                    ? 'Resume voice reply'
+                                    : 'Pause voice reply'
+                                  : 'Play voice reply'
+                              }
                               title={
                                 message.text.length > MAX_SPEAK_CHARS
                                   ? 'Reply is too long to play'
@@ -396,12 +452,18 @@ const Chatbot = () => {
                             >
                               {speakingId === message.id ? (
                                 <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
-                              ) : playingId === message.id ? (
-                                <Square className="h-3 w-3" aria-hidden />
+                              ) : playingId === message.id && !isPaused ? (
+                                <Pause className="h-3 w-3" aria-hidden />
+                              ) : playingId === message.id && isPaused ? (
+                                <Play className="h-3 w-3" aria-hidden />
                               ) : (
                                 <Volume2 className="h-3 w-3" aria-hidden />
                               )}
-                              {playingId === message.id ? 'Stop' : 'Play in my voice'}
+                              {playingId === message.id
+                                ? isPaused
+                                  ? 'Resume'
+                                  : 'Pause'
+                                : 'Play in my voice'}
                             </button>
                           )}
                           {message.sender === 'bot' &&
