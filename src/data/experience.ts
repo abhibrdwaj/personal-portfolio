@@ -10,30 +10,32 @@ export interface Experience {
 
 export const experiences: Experience[] = [
   {
-    company: "Stealth Startup",
+    company: "Kidture Health",
     role: "Founding Engineer",
-    duration: "Dec 2025 - Present",
+    duration: "Jan 2026 - Present",
     location: "New York City, NY",
     achievements: [
-      "Built a specialized multi-agent conversational interface with LangGraph, reducing parent logging friction by an estimated 60%",
-      "Designed a multi-vector RAG pipeline across isolated healthcare data domains, improving contextual retrieval accuracy by 35%",
-      "Implemented secure multi-tenant cloud deployment architecture on Azure and Vercel with automated CI/CD for rapid clinical beta iterations",
-      "Developed low-latency streaming AI APIs using SSE and WebSockets for token-level response delivery",
-      "Engineered clinical NLP and medical entity extraction pipelines to map unstructured parent inputs to standardized terminology",
-      "Built LLM-backed physical examination summary pipelines integrating chat context and Apple HealthKit telemetry",
-      "Established observability and continuous LLM-as-a-Judge evaluation workflows to detect regression and control model drift"
+      "Sole backend engineer for a pediatric health platform — schema design, 39 production migrations, API, compliance, and Dockerized deploy on Render, with no dedicated DevOps/compliance function to hand off to",
+      "Built a GDPR-aligned account-erasure system (explicit deletion registry, not DB-cascade) shipped via a zero-downtime Alembic migration, verified with 33 tests and zero regressions",
+      "Designed a two-lane Redis worker + cron job architecture with atomic-deploy semantics, closing 14 pre-existing test failures with zero regressions",
+      "Designed and provisioned a 2-AZ AWS VPC with a self-managed NAT instance and 6 VPC endpoints, debugging two live infra issues invisible until tested live",
+      "Provisioned RDS Postgres (pgvector-enabled) and ElastiCache Serverless, choosing the Valkey engine over Redis OSS for a roughly 15x lower cost floor at beta scale",
+      "Designed a deny-list-based safety guardrail that escalates acute symptoms before any LLM is invoked — a hard code boundary, not a prompt instruction",
+      "Built a hybrid SNOMED/UMLS clinical-term resolver (curated catalog + batched Claude Haiku extraction), reaching 75% code-assignment accuracy",
+      "Shipped and hardened device-integration sync (Oura, Apple HealthKit), fixing a production sync-resilience bug (28/28 targeted tests)"
     ],
     tech: [
-      "LangGraph",
-      "RAG",
-      "LLMs",
-      "Clinical NLP",
-      "Azure",
-      "Vercel",
-      "CI/CD",
-      "SSE",
-      "WebSockets",
-      "Apple HealthKit"
+      "Python",
+      "FastAPI",
+      "SQLAlchemy",
+      "Alembic",
+      "PostgreSQL",
+      "pgvector",
+      "Redis",
+      "Docker",
+      "Render",
+      "AWS",
+      "Anthropic Claude API"
     ]
   },
   {

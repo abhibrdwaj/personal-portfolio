@@ -1,5 +1,6 @@
 import numpy as np
 
+from app.corpus_loader import PUBLIC_CHAT_KINDS
 from app.retrieval.index import build_index
 from app.retrieval.retrieve import retrieve, top_k_indices
 
@@ -56,3 +57,31 @@ def test_retrieve_filters_allowed_kinds():
     )
     assert len(hits) == 1
     assert hits[0].chunk_id == "a"
+
+
+def test_public_chat_kinds_excludes_eligibility():
+    # Regression guard: eligibility (visa/EEO self-ID) content must never be
+    # retrievable by the open /v1/chat endpoint, only by /v1/jd-fit.
+    assert "eligibility" not in PUBLIC_CHAT_KINDS
+
+
+def test_retrieve_with_public_chat_kinds_hides_eligibility_chunk():
+    index = build_index(
+        ["exp-0", "elig-0"],
+        ["Experience", "Eligibility"],
+        ["experience", "eligibility"],
+        ["x", "y"],
+        [
+            [1.0, 0.0, 0.0],
+            [0.9, 0.1, 0.0],
+        ],
+    )
+    hits = retrieve(
+        index,
+        [1.0, 0.0, 0.0],
+        top_k=5,
+        min_score=-1.0,
+        allowed_kinds=PUBLIC_CHAT_KINDS,
+    )
+    assert all(h.kind != "eligibility" for h in hits)
+    assert [h.chunk_id for h in hits] == ["exp-0"]

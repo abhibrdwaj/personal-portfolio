@@ -3,6 +3,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.config import Settings
+from app.corpus_loader import PUBLIC_CHAT_KINDS
 from app.deps import get_app_settings, get_llm_client, get_vector_index
 from app.llm.client import LLMClient
 from app.retrieval.index import VectorIndex
@@ -82,7 +83,7 @@ async def chat(
     )
 
     t_vec = time.perf_counter()
-    chunks = retrieve(index, q_emb, top_k=5, min_score=0.12)
+    chunks = retrieve(index, q_emb, top_k=5, min_score=0.12, allowed_kinds=PUBLIC_CHAT_KINDS)
     trace.span(
         "retrieve",
         (time.perf_counter() - t_vec) * 1000,

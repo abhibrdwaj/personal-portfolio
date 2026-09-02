@@ -13,7 +13,7 @@ const Experience = () => {
   const companyLogoMap: Record<string, string> = {
     'Freshworks': freshworksLogo,
     'Rutgers University': rutgersLogo,
-    'Stealth Startup': stealthStartupLogo
+    'Kidture Health': stealthStartupLogo
   };
 
   return (

@@ -22,6 +22,7 @@ ALLOWED_KINDS = {
     "certification",
     "award",
     "meta",
+    "eligibility",
 }
 
 ALLOWED_KIND_BY_TOP_DIR = {
@@ -29,7 +30,13 @@ ALLOWED_KIND_BY_TOP_DIR = {
     "projects": {"project"},
     "meta": {"meta"},
     "education_certifications": {"education", "certification", "award"},
+    "eligibility": {"eligibility"},
 }
+
+# `eligibility` (visa/work-authorization/EEO self-ID content) is retrievable by
+# /v1/jd-fit only — never by the open /v1/chat. See PUBLIC_CHAT_KINDS usage in
+# app/handlers/chat.py.
+PUBLIC_CHAT_KINDS = ALLOWED_KINDS - {"eligibility"}
 
 
 def _parse_frontmatter(raw: str, path: Path) -> tuple[dict[str, str], str]:
