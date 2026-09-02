@@ -22,14 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Python API
-api/.venv
-api/__pycache__
-api/**/__pycache__
-api/*.egg-info
-.worktrees
-api/.env
-
-# Environment variables
+api/.venv/
 .env
+api/.env
+__pycache__/
+*.py[cod]
