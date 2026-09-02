@@ -1,0 +1,167 @@
+# Rollout Runbook: portfolio-api on Oracle Cloud k3s
+
+One-time setup steps to take `api/` from merged code to a live HTTPS endpoint.
+Run these yourself — they need your Oracle Cloud, DuckDNS, and GitHub
+accounts, which nothing else in this repo has access to.
+
+## 1. Provision the VM
+
+- Oracle Cloud Console -> Compute -> Instances -> Create Instance.
+- Shape: `VM.Standard.A1.Flex` (Ampere ARM), Always Free eligible. 2 OCPU / 12GB is
+  plenty for this workload; you can go up to 4 OCPU / 24GB, still free.
+- Image: Ubuntu 22.04 (ARM).
+- Networking: attach a reserved **public IPv4** (free, static).
+- In the VM's attached Security List (or Network Security Group), allow
+  ingress on **22** (SSH), **80**, and **443** from `0.0.0.0/0`. Oracle has
+  two layers here (the VCN Security List *and* the instance's own iptables
+  via `netfilter-persistent` on the image) -- if you can SSH in but 80/443
+  don't respond later, check both.
+
+## 2. Install k3s
+
+SSH into the VM, then:
+
+```bash
+curl -sfL https://get.k3s.io | sh -
+sudo cat /etc/rancher/k3s/k3s.yaml
+```
+
+Copy that kubeconfig to your local machine (or keep using it over SSH),
+pointing its `server:` field at the VM's public IP instead of `127.0.0.1`.
+Confirm access:
+
+```bash
+kubectl get nodes
+```
+
+## 3. Install cert-manager
+
+```bash
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.2/cert-manager.yaml
+kubectl -n cert-manager wait --for=condition=Available deployment --all --timeout=180s
+```
+
+## 4. Set up DuckDNS
+
+- Sign in at https://www.duckdns.org, create a subdomain (e.g.
+  `abhinav-portfolio`), and point it at the VM's static public IP.
+- Because the IP is static (not the usual DuckDNS dynamic-IP case), this is
+  a one-time setting, not a running updater.
+- Your API's hostname is now `abhinav-portfolio.duckdns.org` (substitute
+  your actual chosen name everywhere below).
+
+## 5. Clone the repo onto the VM
+
+```bash
+sudo mkdir -p /opt/portfolio && sudo chown $USER:$USER /opt/portfolio
+git clone https://github.com/abhibrdwaj/personal-portfolio.git /opt/portfolio
+cd /opt/portfolio
+```
+
+## 6. Fill in the real secrets and hostnames (none of this is committed)
+
+```bash
+cp deploy/k3s/postgres-secret.example.yaml deploy/k3s/postgres-secret.yaml
+cp deploy/k3s/api-secret.example.yaml deploy/k3s/api-secret.yaml
+```
+
+Edit both copies: put a real Postgres password in `postgres-secret.yaml`
+(and match it in `api-secret.yaml`'s `DATABASE_URL`), your real
+`OPENAI_API_KEY`, your Langfuse keys (sign up free at
+https://cloud.langfuse.com if you haven't), and set `CORPUS_VERSION` to the
+current `git rev-parse --short HEAD`.
+
+Edit `deploy/k3s/cluster-issuer.yaml`: replace `REPLACE_ME_EMAIL` with your
+real email.
+
+Edit `deploy/k3s/ingress.yaml`: replace both `REPLACE_ME.duckdns.org` with
+your real DuckDNS hostname from step 4.
+
+## 7. Apply the namespace, Postgres, and schema
+
+```bash
+kubectl apply -f deploy/k3s/namespace.yaml
+kubectl apply -f deploy/k3s/postgres-secret.yaml
+kubectl apply -f deploy/k3s/postgres.yaml
+kubectl -n portfolio wait --for=condition=Ready pod -l app=postgres --timeout=180s
+
+kubectl -n portfolio cp api/db/schema.sql postgres-0:/tmp/schema.sql
+kubectl -n portfolio exec postgres-0 -- psql -U portfolio -d portfolio -f /tmp/schema.sql
+```
+
+## 8. Build and push the first image
+
+Easiest: push this branch's commits to `main` once (after Task 10's CI
+workflow is merged) -- CI builds and pushes
+`ghcr.io/abhibrdwaj/portfolio-api:<sha>` automatically. Note the short SHA
+it used; you'll need it below.
+
+## 9. Apply cert-manager's issuer, the API, and the Ingress
+
+```bash
+kubectl apply -f deploy/k3s/cluster-issuer.yaml
+kubectl apply -f deploy/k3s/api-secret.yaml
+
+sed "s|ghcr.io/abhibrdwaj/portfolio-api:latest|ghcr.io/abhibrdwaj/portfolio-api:<sha-from-step-8>|" \
+  deploy/k3s/api.yaml | kubectl apply -f -
+
+kubectl apply -f deploy/k3s/ingress.yaml
+kubectl -n portfolio rollout status deployment/portfolio-api --timeout=120s
+```
+
+## 10. Seed Postgres with the corpus
+
+```bash
+sed -e "s|REPLACE_ME_GIT_SHA|<sha-from-step-8>|" \
+    -e "s|ghcr.io/abhibrdwaj/portfolio-api:latest|ghcr.io/abhibrdwaj/portfolio-api:<sha-from-step-8>|" \
+    deploy/k3s/ingest-job.yaml | kubectl apply -f -
+kubectl -n portfolio wait --for=condition=complete job/corpus-ingest --timeout=300s
+kubectl -n portfolio logs job/corpus-ingest
+```
+
+Expect a line like `Ingested <N> chunks at corpus_version=<sha>`.
+
+## 11. Verify
+
+```bash
+curl -sS https://abhinav-portfolio.duckdns.org/health
+curl -sS https://abhinav-portfolio.duckdns.org/v1/chat \
+  -H 'content-type: application/json' \
+  -d '{"messages":[{"role":"user","content":"What is your experience at Kidture Health?"}]}'
+```
+
+Expect `{"status":"ok"}` from the first call and a real grounded reply with
+citations from the second.
+
+## 12. Wire up CI for future deploys
+
+In the GitHub repo's Settings -> Secrets and variables -> Actions, add:
+
+- `ORACLE_VM_HOST` — the VM's public IP.
+- `ORACLE_VM_USER` — the SSH user (e.g. `ubuntu`).
+- `ORACLE_VM_SSH_KEY` — the private key matching a public key already
+  authorized on the VM (`~/.ssh/authorized_keys`), with permission to run
+  `kubectl` (either the VM's default user, or one you've given a copy of
+  `/etc/rancher/k3s/k3s.yaml` with the right ownership).
+
+From here, every push to `main` that changes `api/**` builds, pushes, and
+rolls out automatically, re-running the corpus ingest whenever
+`api/corpus/**` changed in that push.
+
+## 13. Point the frontend at the new API
+
+Create `.env.production` at the repo root (this is not secret, just the
+public API URL, so it's fine to commit):
+
+```
+VITE_API_BASE_URL=https://abhinav-portfolio.duckdns.org
+```
+
+Then:
+
+```bash
+npm run deploy
+```
+
+This rebuilds the frontend with the production API URL baked in and
+publishes it to GitHub Pages via `gh-pages`.
