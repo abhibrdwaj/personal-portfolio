@@ -27,5 +27,6 @@ api/.venv/
 api/.env
 __pycache__/
 *.py[cod]
+*.egg-info/
 deploy/k3s/postgres-secret.yaml
 deploy/k3s/api-secret.yaml
