@@ -235,6 +235,24 @@ cat >> deploy/k3s/api-secret.yaml <<'EOF'
   FISH_AUDIO_API_KEY: <your-real-key>
   FISH_AUDIO_VOICE_ID: <your-real-voice-id>
 EOF
+```
+
+**Check the indentation landed correctly before applying** -- these three
+lines must be indented exactly like the existing `stringData` keys above
+them (2 spaces), or the API server rejects them with `strict decoding
+error: unknown field "TTS_MODE"` etc. (they silently became top-level
+Secret fields instead of `stringData` entries). This has bitten a real
+rollout, so don't skip the check:
+
+```bash
+grep -qE '^  (TTS_MODE|FISH_AUDIO_API_KEY|FISH_AUDIO_VOICE_ID):' deploy/k3s/api-secret.yaml \
+  && echo "indentation OK" \
+  || echo "BAD INDENT -- fix with: sed -i -E 's/^(TTS_MODE|FISH_AUDIO_API_KEY|FISH_AUDIO_VOICE_ID):/  \\1:/' deploy/k3s/api-secret.yaml"
+```
+
+Then:
+
+```bash
 kubectl apply -f deploy/k3s/api-secret.yaml
 kubectl -n portfolio rollout restart deployment/portfolio-api
 kubectl -n portfolio rollout status deployment/portfolio-api --timeout=120s
